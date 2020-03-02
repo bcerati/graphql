@@ -132,5 +132,8 @@
     },
     "symfony/yaml": {
         "version": "v5.0.5"
+    },
+    "webonyx/graphql-php": {
+        "version": "v0.13.8"
     }
 }
