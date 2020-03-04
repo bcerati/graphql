@@ -37,6 +37,13 @@ class Product
      */
     protected $price;
 
+
+    /**
+     * @var float
+     * @ORM\OneToMany(targetEntity="Order", mappedBy="products")
+     */
+    protected $order;
+
     /**
      * @return mixed
      */

@@ -1,12 +1,13 @@
 <?php
 namespace App\Type;
 
+use App\Manager\OrderManager;
 use App\Manager\ProductManager;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
-class MainType extends ObjectType
+class MainType
 {
     /**
      * @var ProductManager
@@ -16,21 +17,28 @@ class MainType extends ObjectType
     /** @var ObjectType */
     protected $productType;
 
-    public function __construct(ProductManager $productManager)
+    /** @var ObjectType */
+    protected $orderType;
+    /**
+     * @var OrderManager
+     */
+    protected $orderManager;
+
+    public function __construct(ProductManager $productManager, OrderManager $orderManager)
     {
         $this->productManager = $productManager;
-
-        parent::__construct($this->buildConfig());
+        $this->orderManager = $orderManager;
     }
 
-    /**
-     * @return array
-     */
-    protected function buildConfig()
+    public function getQuery(): ObjectType
     {
-        return [
+        return new ObjectType([
             'name' => 'Query',
             'fields' => [
+                'orders' => [
+                    'type' => Type::listOf($this->getOrderType()),
+                    'resolve' => [$this->orderManager, 'getOrders']
+                ],
                 'products' => [
                     'type' => Type::listOf($this->getProductType()),
                     'resolve' => [$this->productManager, 'getProducts'],
@@ -47,7 +55,19 @@ class MainType extends ObjectType
                     },
                 ]
             ],
-        ];
+        ]);
+    }
+
+    public function getMutation(): ObjectType
+    {
+        return new ObjectType([
+            'name' => 'Mutation',
+            'fields' => [
+                'createProduct' => [
+                    'type' => $this->getProductType()
+                ]
+            ]
+        ]);
     }
 
     public function getProductType(): ObjectType
@@ -57,7 +77,8 @@ class MainType extends ObjectType
                 'name' => 'Product',
                 'fields' => [
                     'id' => Type::int(),
-                    'name' => Type::string()
+                    'name' => Type::string(),
+                    'description' => Type::string(),
                 ],
                 'resolveField' => static function ($value, $args, $context, ResolveInfo $info) {
                     $getterName = 'get' . ucfirst($info->fieldName);
@@ -72,5 +93,32 @@ class MainType extends ObjectType
         }
 
         return $this->productType;
+    }
+
+    public function getOrderType(): ObjectType
+    {
+        if (!$this->orderType) {
+            $this->orderType =  new ObjectType([
+                'name' => 'Order',
+                'fields' => [
+                    'id' => Type::int(),
+                    'creationDate' => Type::string(),
+                    'amount' => Type::float(),
+                    'username' => Type::string(),
+                    'products' => Type::listOf($this->getProductType()),
+                ],
+                'resolveField' => static function ($value, $args, $context, ResolveInfo $info) {
+                    $getterName = 'get' . ucfirst($info->fieldName);
+
+                    if (!method_exists($value, $getterName)) {
+                        throw new \Exception('Ce getter n\'existe pas !');
+                    }
+
+                    return $value->$getterName();
+                }
+            ]);
+        }
+
+        return $this->orderType;
     }
 }

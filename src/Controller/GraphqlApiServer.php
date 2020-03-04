@@ -14,10 +14,11 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class GraphqlApiServer extends AbstractController
 {
-    public function __invoke(Request $request, MainType $queryType)
+    public function __invoke(Request $request, MainType $mainType)
     {
         $schema = new Schema([
-            'query' => $queryType
+            'query' => $mainType->getQuery(),
+            'mutation' => $mainType->getMutation()
         ]);
 
         $rawInput = $request->getContent();
