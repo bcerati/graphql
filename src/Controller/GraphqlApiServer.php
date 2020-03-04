@@ -26,7 +26,7 @@ class GraphqlApiServer extends AbstractController
         $variableValues = $input['variables'] ?? null;
 
         try {
-            $rootValue = ['prefix' => 'You said: '];
+            $rootValue = [];
             $result = GraphQL::executeQuery($schema, $query, $rootValue, null, $variableValues);
             $output = $result->toArray();
         } catch (\Exception $e) {
