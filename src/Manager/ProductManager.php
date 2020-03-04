@@ -31,4 +31,12 @@ class ProductManager
             ->getRepository(Product::class)
             ->findAll();
     }
+
+    public function getProduct(int $id): Product
+    {
+        return $this
+            ->entityManager
+            ->getRepository(Product::class)
+            ->findOneBy(['id' => $id]);
+    }
 }
