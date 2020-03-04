@@ -39,4 +39,12 @@ class ProductManager
             ->getRepository(Product::class)
             ->findOneBy(['id' => $id]);
     }
+
+    public function create(Product $product): Product
+    {
+        $this->entityManager->persist($product);
+        $this->entityManager->flush();
+
+        return $product;
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace App\Type;
 
+use App\Entity\Product;
 use App\Manager\OrderManager;
 use App\Manager\ProductManager;
 use GraphQL\Type\Definition\ObjectType;
@@ -64,9 +65,24 @@ class MainType
             'name' => 'Mutation',
             'fields' => [
                 'createProduct' => [
-                    'type' => $this->getProductType()
+                    'type' => $this->getProductType(),
+                    'args' => [
+                        'name' => Type::string(),
+                        'description' => Type::string(),
+                        'price' => Type::float(),
+                    ],
+                    'resolve' => function ($root, $args) {
+                        $product = new Product();
+                        $product
+                            ->setName($args['name'])
+                            ->setDescription($args['description'])
+                            ->setPrice($args['price']);
+
+                        return $this->productManager->create($product);
+                    }
                 ]
-            ]
+            ],
+
         ]);
     }
 
